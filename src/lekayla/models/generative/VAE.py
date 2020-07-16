@@ -106,7 +106,7 @@ class VAE:
 
         # plot_model(self._vae, to_file='vae_mlp.png', show_shapes=True)
 
-    def fit(self, X, y=None, epochs=30, batch_size=32):
+    def fit(self, X, y=None, n_epochs=30, batch_size=32):
         """
         Might use y for embedding
         """
@@ -116,7 +116,7 @@ class VAE:
         self._decoder, outputs = self.build_decoder(self._num_features)
         self.build_vae(self._encoder, self._decoder, inputs, outputs)
 
-        self._history = self._vae.fit(X, X, epochs=epochs, batch_size=batch_size)
+        self._history = self._vae.fit(X, X, epochs=n_epochs, batch_size=batch_size)
 
         return self
 

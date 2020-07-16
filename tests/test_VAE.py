@@ -23,7 +23,7 @@ def test_generation():
     X_scaled, y = create_and_scale_data()
     vae = VAE()
     vae.fit(X_scaled, y, n_epochs=1)
-    assert 0 < vae.calculate_reconstruction_error(X_scaled) < 1
+    assert 0 < np.mean(vae.calculate_reconstruction_error(X_scaled)) < 1
 
 
 if __name__ == "__main__":
