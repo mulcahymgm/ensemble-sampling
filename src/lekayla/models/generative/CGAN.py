@@ -152,9 +152,7 @@ class CGAN:
         label = Input(shape=(1,))
 
         features = self.generator([noise, label])
-        
-        print("Noise ", noise.shape)
-        print("Label ", label.shape)
+
         valid = self.discriminator([features, label])
 
         # we freeze the discriminator's layers since we are only interested
