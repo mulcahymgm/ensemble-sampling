@@ -36,7 +36,7 @@ class CGAN:
 
     Parameters
     ----------
-    latent_dim : int, default = 50
+    latent_dim : int, default = 100
         The size of a noise sample generated in training.
 
     """
@@ -50,7 +50,7 @@ class CGAN:
         alpha=0.2,
         layer_size=16,
         number_layers=1,
-        dropout=0.4,
+        dropout=0.2,
     ):
         """Defines and compiles the discriminator model.
 
@@ -62,7 +62,7 @@ class CGAN:
             alpha : float, default = 0.2
             layer_size : int, default = 16
             number_layers : int, default = 1
-            dropout : float, default = 0.4
+            dropout : float, default = 0.2
         """
 
         features = Input(shape=(self._num_features,))
@@ -291,7 +291,9 @@ class CGAN:
             self.acc_gan_hist_,
         )
 
-    def fit(self, X, y, n_epochs=2000):
+    def fit(
+        self, X, y, n_epochs=2000, batch_size=32, k=2, hist_every=10, log_every=100,
+    ):
         """Fits to the data
 
         Parameters
@@ -300,6 +302,11 @@ class CGAN:
             The training input samples.
         y : array-like, shape (n_samples,)
             The target values. An array of int.
+        n_epochs: int
+        batch_size: int
+        k : int - hyperparameter representing number of times discriminator is trained in each training step (see GoodFellow et al)
+        hist_every: int - will save the training loss and accuracy every hist_every epochs
+        log_every: int - will output the loss and acurracy every log_every epochs
 
         Returns
         -------
@@ -312,7 +319,18 @@ class CGAN:
         self.build_generator()
         self.build_gan()
 
-        self.train_gan(self.gan, self.generator, self.discriminator, X, y)
+        self.train_gan(
+            self.gan,
+            self.generator,
+            self.discriminator,
+            X,
+            y,
+            n_epochs=n_epochs,
+            batch_size=batch_size,
+            k=k,
+            hist_every=hist_every,
+            log_every=log_every,
+        )
 
         return self
 

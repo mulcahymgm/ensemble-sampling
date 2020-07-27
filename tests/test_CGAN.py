@@ -22,7 +22,7 @@ def create_and_scale_data(n_samples=1000, n_classes=3, n_features=2, random_stat
 def test_generation():
     X_scaled, y = create_and_scale_data()
     cgan = CGAN()
-    cgan.fit(X_scaled, y, n_epochs=1)
+    cgan.fit(X_scaled, y, n_epochs=2, hist_every=1)
     assert 0 < np.min(cgan.loss_real_hist_) < np.max(cgan.loss_real_hist_) < 1
     assert 0 < np.min(cgan.loss_fake_hist_) < np.max(cgan.loss_fake_hist_) < 1
 
