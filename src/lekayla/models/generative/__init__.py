@@ -1,5 +1,5 @@
 """
-provides geberative models for creating samples
+provides generative models for creating samples
 """
 
 from .CGAN import CGAN

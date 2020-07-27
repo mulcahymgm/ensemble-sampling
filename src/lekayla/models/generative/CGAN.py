@@ -358,7 +358,7 @@ class CGAN:
 
         return None
 
-    def generate_samples(self, class_for, n_samples=64):
+    def generate_samples(self, class_for=1, n_samples=64):
         """Generates new random but very realistic features using a trained generator model
 
         Params:

@@ -106,10 +106,16 @@ class VAE:
 
         # plot_model(self._vae, to_file='vae_mlp.png', show_shapes=True)
 
-    def fit(self, X, y=None, n_epochs=30, batch_size=32):
+    def fit(self, X, y, n_epochs=30, batch_size=32):
         """
-        Might use y for embedding
+        Might use y for embedding, sampling from minority only at moment.
         """
+
+        classes = set(y)
+
+        # for now will just be using the minority class for sampling
+        X = X[:][np.where(y == max(classes))]
+        y = y[np.where(y == max(classes))]
 
         self._num_features = X.shape[1]
         self._encoder, inputs = self.build_encoder((self._num_features,))
