@@ -42,7 +42,7 @@ class VAE:
         z = Sampling()([z_mean, z_log_var])
         encoder = Model(inputs, [z_mean, z_log_var, z], name="encoder")
 
-        encoder.summary()
+        # encoder.summary()
         # plot_model(encoder, to_file='vae_mlp_encoder.png', show_shapes=True)
 
         return (encoder, inputs)
@@ -62,7 +62,7 @@ class VAE:
         # instantiate decoder model
         decoder = Model(latent_inputs, outputs, name="decoder")
 
-        decoder.summary()
+        # decoder.summary()
         # plot_model(decoder, to_file='vae_mlp_decoder.png', show_shapes=True)
 
         return (decoder, outputs)
@@ -96,7 +96,7 @@ class VAE:
         # instantiate VAE model
         outputs = decoder(encoder(inputs)[2])
         self._vae = Model(inputs, outputs, name="vae_mlp")
-        self._vae.summary()
+        # self._vae.summary()
 
         self._vae.compile(
             optimizer=optimizer,
