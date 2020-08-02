@@ -10,13 +10,11 @@ from src.lekayla.models.generative import CGAN, SMOTE, VAE
 
 
 class DatasetGenerator:
-    def __init__(self):
-        self._datasets = fetch_datasets()
-        self._creditcard_dataset = pd.read_csv("./data/creditcard.csv")
+    def __init__(self, dataset_name):
+        self._X, self._y = self.get_dataset(dataset_name)
 
     def generate(
         self,
-        dataset_name,
         data_scale,
         include_original,
         sampler=None,
@@ -25,24 +23,23 @@ class DatasetGenerator:
         stratify=True,
         random_state=168,
     ):
-        X, y = self.get_dataset(dataset_name)
 
-        classes = set(y)
+        classes = set(self._y)
 
         if min(classes) < 0:
             # use 0 and 1 for the class instead of -1 and 1
-            y = np.array([0 if yval < 0 else 1 for yval in y])
+            self._y = np.array([0 if yval < 0 else 1 for yval in self._y])
 
-        classes = set(y)
+        classes = set(self._y)
 
         if stratify:
-            stratify_y_ds = y
+            stratify_y_ds = self._y
         else:
             stratify_y_ds = None
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
+            self._X,
+            self._y,
             test_size=test_size,
             stratify=stratify_y_ds,
             random_state=random_state,
@@ -87,44 +84,49 @@ class DatasetGenerator:
         return (X_return_samples, scaled_X_test, y_return_samples, y_test)
 
     def get_dataset(self, dataset_name):
-        if dataset_name in self._datasets.keys():
-            X = self._datasets[dataset_name]["data"]
-            y = self._datasets[dataset_name]["target"]
+        X = None
+        y = None
 
-        elif dataset_name == "creditcard":
+        if dataset_name == "creditcard":
+            self._creditcard_dataset = pd.read_csv("./data/creditcard.csv")
             X = self._creditcard_dataset.iloc[:, :-1]
             y = self._creditcard_dataset.iloc[:, -1:]
-        return X, y
+            return X, y
 
-    def get_vanilla(self, dataset_name):
-        return self.generate(dataset_name, 1, True)
+        else:
+            self._datasets = fetch_datasets()
+            if dataset_name in self._datasets.keys():
+                X = self._datasets[dataset_name]["data"]
+                y = self._datasets[dataset_name]["target"]
+                return X, y
+            else:
+                raise ValueError("Unknown dataset name specified: " + dataset_name)
 
-    def get_VAE(self, dataset_name, scale):
-        return self.generate(dataset_name, scale, False, sampler=VAE())
+    def get_vanilla(self):
+        return self.generate(1, True)
 
-    def get_CGAN(self, dataset_name, scale):
-        return self.generate(dataset_name, scale, False, sampler=CGAN(latent_dim=100))
+    def get_VAE(self, scale):
+        return self.generate(scale, False, sampler=VAE())
 
-    def get_SMOTE(self, dataset_name, scale):
-        return self.generate(dataset_name, scale, False, sampler=SMOTE())
+    def get_CGAN(self, scale):
+        return self.generate(scale, False, sampler=CGAN(latent_dim=100))
 
-    def get_original_with_VAE(self, dataset_name, scale):
-        return self.generate(dataset_name, scale, True, sampler=VAE())
+    def get_SMOTE(self, scale):
+        return self.generate(scale, False, sampler=SMOTE())
 
-    def get_original_with_CGAN(self, dataset_name, scale):
-        return self.generate(dataset_name, scale, True, sampler=CGAN(latent_dim=100))
+    def get_original_with_VAE(self, scale):
+        return self.generate(scale, True, sampler=VAE())
 
-    def get_original_with_SMOTE(self, dataset_name, scale):
-        return self.generate(dataset_name, scale, True, sampler=SMOTE())
+    def get_original_with_CGAN(self, scale):
+        return self.generate(scale, True, sampler=CGAN(latent_dim=100))
 
-    def get_original_with_VAE_and_CGAN(self, dataset_name, scale):
-        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla(dataset_name)
-        X_v_train, X_v_test, y_v_train, y_v_test = self.get_VAE(
-            dataset_name, int(ceil(scale / 2))
-        )
-        X_c_train, X_c_test, y_c_train, y_c_test = self.get_CGAN(
-            dataset_name, int(ceil(scale / 2))
-        )
+    def get_original_with_SMOTE(self, scale):
+        return self.generate(scale, True, sampler=SMOTE())
+
+    def get_original_with_VAE_and_CGAN(self, scale):
+        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla()
+        X_v_train, X_v_test, y_v_train, y_v_test = self.get_VAE(int(ceil(scale / 2)))
+        X_c_train, X_c_test, y_c_train, y_c_test = self.get_CGAN(int(ceil(scale / 2)))
         X_train = np.vstack((X_o_train, X_v_train, X_c_train))
         X_test = np.vstack((X_o_test, X_v_test, X_c_test))
 
@@ -133,14 +135,10 @@ class DatasetGenerator:
 
         return X_train, X_test, y_train, y_test
 
-    def get_original_with_VAE_and_SMOTE(self, dataset_name, scale):
-        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla(dataset_name)
-        X_v_train, X_v_test, y_v_train, y_v_test = self.get_VAE(
-            dataset_name, int(ceil(scale / 2))
-        )
-        X_s_train, X_s_test, y_s_train, y_s_test = self.get_SMOTE(
-            dataset_name, int(ceil(scale / 2))
-        )
+    def get_original_with_VAE_and_SMOTE(self, scale):
+        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla()
+        X_v_train, X_v_test, y_v_train, y_v_test = self.get_VAE(int(ceil(scale / 2)))
+        X_s_train, X_s_test, y_s_train, y_s_test = self.get_SMOTE(int(ceil(scale / 2)))
         X_train = np.vstack((X_o_train, X_v_train, X_s_train))
         X_test = np.vstack((X_o_test, X_v_test, X_s_test))
 
@@ -149,14 +147,10 @@ class DatasetGenerator:
 
         return X_train, X_test, y_train, y_test
 
-    def get_original_with_SMOTE_and_CGAN(self, dataset_name, scale):
-        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla(dataset_name)
-        X_c_train, X_c_test, y_c_train, y_c_test = self.get_CGAN(
-            dataset_name, int(ceil(scale / 2))
-        )
-        X_s_train, X_s_test, y_s_train, y_s_test = self.get_SMOTE(
-            dataset_name, int(ceil(scale / 2))
-        )
+    def get_original_with_SMOTE_and_CGAN(self, scale):
+        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla()
+        X_c_train, X_c_test, y_c_train, y_c_test = self.get_CGAN(int(ceil(scale / 2)))
+        X_s_train, X_s_test, y_s_train, y_s_test = self.get_SMOTE(int(ceil(scale / 2)))
         X_train = np.vstack((X_o_train, X_c_train, X_s_train))
         X_test = np.vstack((X_o_test, X_c_test, X_s_test))
 
@@ -165,17 +159,11 @@ class DatasetGenerator:
 
         return X_train, X_test, y_train, y_test
 
-    def get_original_with_CGAN_and_VAE_and_SMOTE(self, dataset_name, scale):
-        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla(dataset_name)
-        X_v_train, X_v_test, y_v_train, y_v_test = self.get_VAE(
-            dataset_name, int(ceil(scale / 3))
-        )
-        X_c_train, X_c_test, y_c_train, y_c_test = self.get_CGAN(
-            dataset_name, int(ceil(scale / 3))
-        )
-        X_s_train, X_s_test, y_s_train, y_s_test = self.get_SMOTE(
-            dataset_name, int(ceil(scale / 3))
-        )
+    def get_original_with_CGAN_and_VAE_and_SMOTE(self, scale):
+        X_o_train, X_o_test, y_o_train, y_o_test = self.get_vanilla()
+        X_v_train, X_v_test, y_v_train, y_v_test = self.get_VAE(int(ceil(scale / 3)))
+        X_c_train, X_c_test, y_c_train, y_c_test = self.get_CGAN(int(ceil(scale / 3)))
+        X_s_train, X_s_test, y_s_train, y_s_test = self.get_SMOTE(int(ceil(scale / 3)))
         X_train = np.vstack((X_o_train, X_v_train, X_c_train, X_s_train))
         X_test = np.vstack((X_o_test, X_v_test, X_c_test, X_s_test))
 
