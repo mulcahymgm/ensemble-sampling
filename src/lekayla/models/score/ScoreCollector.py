@@ -11,9 +11,7 @@ class ScoreCollector:
         # import classification_report, balanced_accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 
         scores = {}
-        scores["Accuracy Score"] = metrics.accuracy_score(
-            y_true, y_pred
-        )
+        scores["Accuracy Score"] = metrics.accuracy_score(y_true, y_pred)
         scores["Balanced Accuracy Score"] = metrics.balanced_accuracy_score(
             y_true, y_pred
         )

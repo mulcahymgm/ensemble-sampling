@@ -292,7 +292,22 @@ class CGAN:
         )
 
     def fit(
-        self, X, y, n_epochs=2000, batch_size=32, k=2, hist_every=10, log_every=100,
+        self,
+        X,
+        y,
+        n_epochs=2000,
+        batch_size=32,
+        k=2,
+        hist_every=10,
+        log_every=100,
+        d_optimizer=Adam(0.0002, 0.5),
+        d_alpha=0.2,
+        layer_size=16,
+        number_layers=1,
+        d_dropout=0.2,
+        gen_alpha=0.2,
+        gen_momentum=0.8,
+        gan_optimizer=Adam(0.0002, 0.5),
     ):
         """Fits to the data
 
@@ -315,9 +330,23 @@ class CGAN:
 
         self._num_features = X.shape[1]
         self._num_classes = len(set(y))
-        self.build_discriminator()
-        self.build_generator()
-        self.build_gan()
+
+        self.build_discriminator(
+            optimizer=d_optimizer,
+            alpha=d_alpha,
+            layer_size=layer_size,
+            number_layers=number_layers,
+            dropout=d_dropout,
+        )
+
+        self.build_generator(
+            alpha=gen_alpha,
+            momentum=gen_momentum,
+            layer_size=layer_size,
+            number_layers=number_layers,
+        )
+
+        self.build_gan(optimizer=gan_optimizer)
 
         self.train_gan(
             self.gan,

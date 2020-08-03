@@ -1,17 +1,19 @@
+from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn import svm
 
 
 class Experiment:
     def __init__(self, name, data_function, score_collector):
         self._name = name
+        print('Creating Experiment: ' + self._name)
         self._X_train, self._X_test, self._y_train, self._y_test = data_function()
         self.score_collector = score_collector
 
     def fit(self):
 
+        print('Running Experiment: ' + self._name)
         svm_clf = svm.SVC()
         rf_clf = RandomForestClassifier()
         mlp_clf = MLPClassifier()

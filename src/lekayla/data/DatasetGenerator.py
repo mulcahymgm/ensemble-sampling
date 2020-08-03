@@ -88,9 +88,9 @@ class DatasetGenerator:
         y = None
 
         if dataset_name == "creditcard":
-            self._creditcard_dataset = pd.read_csv("./data/creditcard.csv")
+            self._creditcard_dataset = pd.read_csv("./data/creditcard.csv", header=0)
             X = self._creditcard_dataset.iloc[:, :-1]
-            y = self._creditcard_dataset.iloc[:, -1:]
+            y = self._creditcard_dataset.iloc[:, -1:].values.ravel()
             return X, y
 
         else:
@@ -103,7 +103,7 @@ class DatasetGenerator:
                 raise ValueError("Unknown dataset name specified: " + dataset_name)
 
     def get_vanilla(self):
-        return self.generate(1, True)
+        return self.generate(0, True, sampler=None)
 
     def get_VAE(self, scale):
         return self.generate(scale, False, sampler=VAE())
